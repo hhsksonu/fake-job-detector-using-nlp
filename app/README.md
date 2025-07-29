@@ -129,11 +129,12 @@ You’ll get a live Streamlit link like:
 Your app is live at: https://xyz123.ngrok.io
 ```
 ## 📸 Screenshots
-### 📸 Screenshot 1
-![Screenshot 1](reports_screenshots/app-ss-1.png)
 
-### 📸 Screenshot 2
-![Screenshot 2](reports_screenshots/app-ss-2.png)
+### Screenshot 1
+![Screenshot 1](https://raw.githubusercontent.com/hhsksonu/fake-job-detector-using-nlp/main/reports_screenshots/app-ss-1.png)
+
+### Screenshot 2
+![Screenshot 1](https://raw.githubusercontent.com/hhsksonu/fake-job-detector-using-nlp/main/reports_screenshots/app-ss-2.png)
 
 ---
 

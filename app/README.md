@@ -128,7 +128,12 @@ You’ll get a live Streamlit link like:
 ```text
 Your app is live at: https://xyz123.ngrok.io
 ```
-## 🌐 Optional: Screenshot
+## 📸 Screenshots
+### 📸 Screenshot 1
+![Screenshot 1](reports_screenshots/app-ss-1.png)
+
+### 📸 Screenshot 2
+![Screenshot 2](reports_screenshots/app-ss-2.png)
 
 ---
 

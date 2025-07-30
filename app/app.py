@@ -3,10 +3,15 @@ import joblib
 import numpy as np
 import shap
 import matplotlib.pyplot as plt
+import os
 
 # Load model and vectorizer
-model = joblib.load("xgb_fake_job_model.pkl")
-vectorizer = joblib.load("tfidf_vectorizer.pkl")
+BASE_DIR = os.path.dirname(__file__)
+model_path = os.path.join(BASE_DIR, "xgb_fake_job_model.pkl")
+vectorizer_path = os.path.join(BASE_DIR, "tfidf_vectorizer.pkl")
+
+model = joblib.load(model_path)
+vectorizer = joblib.load(vectorizer_path)
 
 # Initialize SHAP
 shap.initjs()

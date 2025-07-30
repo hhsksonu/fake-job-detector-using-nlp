@@ -4,3 +4,4 @@ xgboost
 shap
 matplotlib
 numpy
+ipython

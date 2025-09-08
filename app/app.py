@@ -5,7 +5,7 @@ import shap
 import matplotlib.pyplot as plt
 import os
 
-# Load model and vectorizer
+# load model and vectorizer
 BASE_DIR = os.path.dirname(__file__)
 model_path = os.path.join(BASE_DIR, "xgb_fake_job_model.pkl")
 vectorizer_path = os.path.join(BASE_DIR, "tfidf_vectorizer.pkl")
@@ -17,7 +17,7 @@ vectorizer = joblib.load(vectorizer_path)
 shap.initjs()
 explainer = shap.Explainer(model)
 
-# Streamlit UI
+# streamlit UI
 st.title("Fake Job Post Detector (NLP + XGBoost)")
 st.write("Paste a job posting below to check whether it's real or fake using an XGBoost model and SHAP explanation.")
 
@@ -27,14 +27,14 @@ if st.button("Predict"):
     if user_input.strip() == "":
         st.warning("Please enter some text to analyze.")
     else:
-        # Vectorize input
+        # vectorize input
         input_vector = vectorizer.transform([user_input])
 
-        # Make prediction
+        # make prediction
         prediction = model.predict(input_vector)[0]
         proba = model.predict_proba(input_vector)[0]
 
-        # Show prediction result
+        # show prediction result
         if prediction == 1:
             st.error(f"This job post is likely **FAKE** (Confidence: {proba[1]*100:.2f}%)")
         else:
@@ -46,10 +46,10 @@ if st.button("Predict"):
             input_dense = input_vector.toarray()
             shap_values = explainer(input_dense)
 
-            # Add feature names to SHAP values
+            # add feature names to SHAP values
             shap_values.feature_names = vectorizer.get_feature_names_out().tolist()
 
-            # Waterfall plot
+            # waterfall plot
             fig, ax = plt.subplots(figsize=(10, 5))
             shap.plots.waterfall(shap_values[0], show=False, max_display=15)
             st.pyplot(fig)

@@ -1,10 +1,10 @@
 
-# 🕵Fake Job Detector using NLP and SHAP Explaination
+# 🔍 Fake Job Detector using NLP and SHAP Explaination
 
 A Machine Learning and NLP-based project that detects fake job postings using real-world data. It leverages TF-IDF vectorization, XGBoost classifier, and model explainability tools like SHAP to identify and understand fraudulent job descriptions.
 
 ---
-## 🔍 Key Highlights of the Project
+## 🔑 Key Highlights of the Project
 
 Built an end-to-end Fake Job Detection system using Natural Language Processing  
 Used TF-IDF vectorization to extract meaningful patterns from job descriptions  

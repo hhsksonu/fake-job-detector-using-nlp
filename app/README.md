@@ -1,5 +1,5 @@
 
-# 🕵️ Fake Job Post Detector – Streamlit App
+# Fake Job Post Detector – Streamlit App
 
 This is the web application interface for the **Fake Job Detector** project. It uses Natural Language Processing (TF-IDF) with an XGBoost classifier to determine whether a job posting is **FAKE** or **REAL**.
 
@@ -147,3 +147,4 @@ Your app is live at: https://xyz123.ngrok.io
 ---
 
 > Made with ❤️ by combining Python, NLP, XGBoost, SHAP, and Streamlit.
+

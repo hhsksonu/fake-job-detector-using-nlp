@@ -1,10 +1,14 @@
 import streamlit as st
 import joblib
 import numpy as np
-import shap
+import matplotlib
+matplotlib.use('Agg')  # Set backend before importing pyplot
 import matplotlib.pyplot as plt
+import shap
 from pathlib import Path
 import time
+import warnings
+warnings.filterwarnings('ignore')
 
 # Page configuration
 st.set_page_config(
@@ -361,58 +365,66 @@ if analyze_button:
                 abs_vals = np.abs(shap_vals)
                 top_indices = np.argsort(abs_vals)[-15:][::-1]
                 
-                # Create data for visualization
-                top_features = [feature_names[i] for i in top_indices]
+                # Create manual bar plot with explicit formatting
+                top_features = [str(feature_names[i]) for i in top_indices]
                 top_values = [float(shap_vals[i]) for i in top_indices]
+                colors = ['#ff6b6b' if v > 0 else '#4ecdc4' for v in top_values]
                 
-                # Use Streamlit native bar chart instead of matplotlib
-                import pandas as pd
-                chart_data = pd.DataFrame({
-                    'Feature': top_features,
-                    'SHAP Value': top_values
-                }).sort_values('SHAP Value', ascending=True)
+                # Generate plot with explicit locale settings
+                import locale
+                try:
+                    locale.setlocale(locale.LC_ALL, 'C')
+                except:
+                    pass
                 
-                # Display as a simple table with visual bars
-                st.markdown("#### Top Features Influencing the Prediction")
+                fig, ax = plt.subplots(figsize=(12, 8))
+                fig.patch.set_facecolor('white')
                 
-                for idx, row in chart_data.iterrows():
-                    feature = row['Feature']
-                    value = row['SHAP Value']
-                    
-                    # Determine color and direction
-                    if value > 0:
-                        color = "#ff6b6b"
-                        direction = "FAKE"
-                        bar_width = int(abs(value) * 100)
-                    else:
-                        color = "#4ecdc4"
-                        direction = "REAL"
-                        bar_width = int(abs(value) * 100)
-                    
-                    # Create visual bar using markdown
-                    col1, col2, col3 = st.columns([3, 5, 2])
-                    with col1:
-                        st.markdown(f"**{feature}**")
-                    with col2:
-                        st.markdown(
-                            f'<div style="background-color: {color}; width: {bar_width}%; '
-                            f'height: 20px; border-radius: 3px;"></div>',
-                            unsafe_allow_html=True
-                        )
-                    with col3:
-                        st.markdown(f"→ {direction}")
+                y_pos = np.arange(len(top_features))
+                bars = ax.barh(y_pos, top_values, color=colors, alpha=0.8, edgecolor='none')
                 
-                st.markdown("---")
+                ax.set_yticks(y_pos)
+                ax.set_yticklabels(top_features, fontsize=10)
+                ax.set_xlabel('SHAP Value (Impact on Prediction)', fontsize=12, fontweight='bold')
+                ax.set_title('Feature Importance for This Prediction', fontsize=14, fontweight='bold', pad=20)
+                ax.axvline(x=0, color='black', linestyle='-', linewidth=0.8)
+                ax.grid(axis='x', alpha=0.3, linestyle='--')
+                ax.spines['top'].set_visible(False)
+                ax.spines['right'].set_visible(False)
+                
+                # Format x-axis without scientific notation
+                ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{x:.3f}'))
+                
+                # Add legend with simple patches
+                from matplotlib.patches import Patch
+                legend_elements = [
+                    Patch(facecolor='#ff6b6b', alpha=0.8, label='Pushes toward FAKE'),
+                    Patch(facecolor='#4ecdc4', alpha=0.8, label='Pushes toward REAL')
+                ]
+                ax.legend(handles=legend_elements, loc='lower right', fontsize=10, frameon=True)
+                
+                plt.tight_layout()
+                
+                # Display in Streamlit
+                st.pyplot(fig, use_container_width=True)
+                plt.close(fig)
+                
                 st.markdown("""
-                **How to read this:**
-                - 🔴 **Red bars** push the prediction toward "Fake"
-                - 🔵 **Blue bars** push the prediction toward "Real"
-                - Longer bars = stronger influence
+                **How to read this chart:**
+                - Each bar represents a word/feature from your text
+                - **Red bars** (→ right) push the prediction toward "Fake"
+                - **Blue bars** (← left) push the prediction toward "Real"
+                - Longer bars = stronger influence on the prediction
+                - The chart shows the top 15 most influential features
                 """)
                 
             except Exception as e:
                 st.error(f"Could not generate SHAP explanation: {str(e)}")
                 st.info("The prediction is still valid, but the detailed explanation is temporarily unavailable.")
+                
+                # Debug info (remove after fixing)
+                import traceback
+                st.code(traceback.format_exc())
 
 # Footer
 st.markdown("---")

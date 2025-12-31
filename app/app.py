@@ -1,16 +1,10 @@
 import streamlit as st
 import joblib
-import numpy as np
-import matplotlib
-matplotlib.use('Agg')  # Set backend before importing pyplot
-import matplotlib.pyplot as plt
 import shap
+import matplotlib.pyplot as plt
 from pathlib import Path
 import time
-import warnings
-warnings.filterwarnings('ignore')
 
-# Page configuration
 st.set_page_config(
     page_title="Fake Job Detector",
     page_icon="🔍",
@@ -18,7 +12,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling
 st.markdown("""
     <style>
     .main-header {
@@ -93,7 +86,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Load model and vectorizer with caching
+# load model and vectorizer and caching
 @st.cache_resource
 def load_models():
     """Load the trained model and vectorizer"""
@@ -109,21 +102,17 @@ def load_models():
     except Exception as e:
         return None, None, str(e)
 
-# Load models
 model, vectorizer, load_error = load_models()
 
-# Header
-st.markdown('<div class="main-header">🔍 Fake Job Post Detector</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">Fake Job Post Detector</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">AI-Powered Job Posting Authenticity Analysis using XGBoost & NLP</div>', unsafe_allow_html=True)
 
-# Check if models loaded successfully
 if load_error:
-    st.error(f"❌ Error loading models: {load_error}")
+    st.error(f"Error loading models: {load_error}")
     st.stop()
 
-# Sidebar - Information and Examples
 with st.sidebar:
-    st.header("ℹ️ About")
+    st.header("About")
     st.markdown("""
     This tool uses **Machine Learning** and **Natural Language Processing** to detect potentially fraudulent job postings.
     
@@ -136,7 +125,7 @@ with st.sidebar:
     
     st.markdown("---")
     
-    st.header("📊 Model Info")
+    st.header("Model Info")
     st.info("""
     - **Algorithm**: XGBoost Classifier
     - **Features**: TF-IDF (5000 features)
@@ -146,7 +135,7 @@ with st.sidebar:
     
     st.markdown("---")
     
-    st.header("🚩 Red Flags")
+    st.header("Red Flags")
     st.warning("""
     Watch out for:
     - Unrealistic salary promises
@@ -159,19 +148,18 @@ with st.sidebar:
     
     st.markdown("---")
     
-    st.header("💡 Example Texts")
+    st.header("Example Texts")
     example_choice = st.selectbox(
         "Load example:",
         ["None", "Fake Example", "Real Example"]
     )
 
-# Main content area
+# main content area
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.markdown("### 📝 Enter Job Posting")
+    st.markdown("### Enter Job Posting")
     
-    # Load example text if selected
     default_text = ""
     if example_choice == "Fake Example":
         default_text = "Earn $5000/week from home! No experience needed. Apply now and start earning today! Click here to get started immediately."
@@ -186,15 +174,14 @@ with col1:
         help="The more text you provide, the better the analysis"
     )
     
-    # Character count
     char_count = len(user_input)
-    st.caption(f"📊 Character count: {char_count}")
+    st.caption(f"Character count: {char_count}")
     
     if char_count > 0 and char_count < 50:
-        st.markdown('<div class="warning-box">⚠️ Short text may result in less accurate predictions. Try to include more details.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="warning-box">Short text may result in less accurate predictions. Try to include more details.</div>', unsafe_allow_html=True)
 
 with col2:
-    st.markdown("### 🎯 Quick Stats")
+    st.markdown("### Quick Stats")
     st.markdown(f"""
     <div class="metric-card">
         <h3 style="margin:0;">Text Length</h3>
@@ -213,37 +200,32 @@ with col2:
         if found_suspicious:
             st.markdown(f"""
             <div class="fake-card">
-                <h4 style="margin:0;">⚠️ Suspicious Words</h4>
+                <h4 style="margin:0;"> Suspicious Words</h4>
                 <p style="margin:0.5rem 0;">{len(found_suspicious)} detected</p>
                 <p style="margin:0; font-size:0.9rem;">{', '.join(found_suspicious[:5])}</p>
             </div>
             """, unsafe_allow_html=True)
 
-# Analyze button
 st.markdown("---")
 analyze_col1, analyze_col2, analyze_col3 = st.columns([1, 2, 1])
 
 with analyze_col2:
-    analyze_button = st.button("🔍 Analyze Job Posting", type="primary", use_container_width=True)
+    analyze_button = st.button("Analyze Job Posting", type="primary", use_container_width=True)
 
-# Analysis section
 if analyze_button:
     if user_input.strip() == "":
-        st.warning("⚠️ Please enter some text to analyze.")
+        st.warning("Please enter some text to analyze.")
     else:
-        # Progress bar
         progress_bar = st.progress(0)
         status_text = st.empty()
         
-        # Vectorize input
-        status_text.text("📊 Processing text...")
+        status_text.text("Processing text...")
         progress_bar.progress(25)
         time.sleep(0.3)
         
         input_vector = vectorizer.transform([user_input])
         
-        # Make prediction
-        status_text.text("🤖 Analyzing with AI model...")
+        status_text.text("Analyzing with AI model...")
         progress_bar.progress(50)
         time.sleep(0.3)
         
@@ -257,20 +239,18 @@ if analyze_button:
         progress_bar.progress(100)
         time.sleep(0.3)
         
-        # Clear progress indicators
         progress_bar.empty()
         status_text.empty()
         
         st.markdown("---")
-        st.markdown("## 📊 Analysis Results")
+        st.markdown("## Analysis Results")
         
-        # Results in columns
         res_col1, res_col2, res_col3 = st.columns(3)
         
         with res_col1:
             st.metric(
                 label="Prediction",
-                value="FAKE ⚠️" if prediction == 1 else "REAL ✅",
+                value="FAKE" if prediction == 1 else "REAL",
                 delta="Suspicious" if prediction == 1 else "Legitimate"
             )
         
@@ -292,12 +272,11 @@ if analyze_button:
                 delta="Be cautious" if prediction == 1 else "Looks good"
             )
         
-        # Detailed result card
         st.markdown("---")
         if prediction == 1:
             st.markdown(f"""
             <div class="fake-card">
-                <h2 style="margin:0;">🚨 FAKE Job Posting Detected</h2>
+                <h2 style="margin:0;">FAKE Job Posting Detected</h2>
                 <h3 style="margin:1rem 0;">Confidence: {proba[1]*100:.2f}%</h3>
                 <p style="font-size:1.1rem; margin:0;">
                 This job posting shows characteristics commonly found in fraudulent listings. 
@@ -306,11 +285,11 @@ if analyze_button:
             </div>
             """, unsafe_allow_html=True)
             
-            st.markdown('<div class="warning-box">⚠️ <strong>Recommendation:</strong> Do not provide personal information, payment, or banking details. Research the company independently and verify through official channels.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="warning-box"><strong>Recommendation:</strong> Do not provide personal information, payment, or banking details. Research the company independently and verify through official channels.</div>', unsafe_allow_html=True)
         else:
             st.markdown(f"""
             <div class="real-card">
-                <h2 style="margin:0;">✅ REAL Job Posting Detected</h2>
+                <h2 style="margin:0;">REAL Job Posting Detected</h2>
                 <h3 style="margin:1rem 0;">Confidence: {proba[0]*100:.2f}%</h3>
                 <p style="font-size:1.1rem; margin:0;">
                 This job posting appears to be legitimate based on our analysis. 
@@ -321,9 +300,9 @@ if analyze_button:
             
             st.markdown('<div class="info-box">💡 <strong>Tip:</strong> Even for legitimate-looking postings, verify the company, check reviews, and research the position before sharing personal information.</div>', unsafe_allow_html=True)
         
-        # Probability breakdown
+        # probability breakdown
         st.markdown("---")
-        st.markdown("### 📈 Probability Breakdown")
+        st.markdown("### Probability Breakdown")
         
         prob_col1, prob_col2 = st.columns(2)
         
@@ -335,96 +314,55 @@ if analyze_button:
             st.metric("Fake Job Probability", f"{proba[1]*100:.2f}%")
             st.progress(float(proba[1]))
         
-        # SHAP Explanation
+        # SHAP explanation
         st.markdown("---")
-        st.markdown("### 🔬 AI Explainability (SHAP Analysis)")
-        st.info("📊 This chart shows which words/features influenced the prediction. Red bars push toward 'Fake', blue bars push toward 'Real'.")
+        st.markdown("### AI Explainability (SHAP Analysis)")
+        st.info("This chart shows which words/features influenced the prediction. Red bars push toward 'Fake', blue bars push toward 'Real'.")
         
         with st.spinner("Generating SHAP explanation..."):
             try:
-                # Convert sparse input to dense
                 input_dense = input_vector.toarray()
                 
-                # Get feature names
-                feature_names = vectorizer.get_feature_names_out()
-                
-                # Create minimal background data for TreeExplainer
                 background_text = [
-                    "This is a normal job posting with experience required.",
-                    "Software engineer position at technology company.",
-                    "Marketing manager role with competitive benefits."
+                    "This is a normal job posting.",
+                    "Looking for a software engineer with Python experience.",
+                    "Marketing manager position with competitive salary and benefits."
                 ]
                 background = vectorizer.transform(background_text).toarray()
                 
-                # Create TreeExplainer
                 explainer = shap.TreeExplainer(model, background)
                 shap_values = explainer.shap_values(input_dense)
                 
-                # Get top contributing features
-                shap_vals = shap_values[0]
-                abs_vals = np.abs(shap_vals)
-                top_indices = np.argsort(abs_vals)[-15:][::-1]
+                feature_names = vectorizer.get_feature_names_out()
                 
-                # Create manual bar plot with explicit formatting
-                top_features = [str(feature_names[i]) for i in top_indices]
-                top_values = [float(shap_vals[i]) for i in top_indices]
-                colors = ['#ff6b6b' if v > 0 else '#4ecdc4' for v in top_values]
+                shap_explanation = shap.Explanation(
+                    values=shap_values[0],
+                    base_values=explainer.expected_value,
+                    data=input_dense[0],
+                    feature_names=feature_names
+                )
                 
-                # Generate plot with explicit locale settings
-                import locale
-                try:
-                    locale.setlocale(locale.LC_ALL, 'C')
-                except:
-                    pass
+                fig, ax = plt.subplots(figsize=(12, 6))
+                shap.plots.waterfall(shap_explanation, max_display=15, show=False)
                 
-                fig, ax = plt.subplots(figsize=(12, 8))
-                fig.patch.set_facecolor('white')
-                
-                y_pos = np.arange(len(top_features))
-                bars = ax.barh(y_pos, top_values, color=colors, alpha=0.8, edgecolor='none')
-                
-                ax.set_yticks(y_pos)
-                ax.set_yticklabels(top_features, fontsize=10)
-                ax.set_xlabel('SHAP Value (Impact on Prediction)', fontsize=12, fontweight='bold')
-                ax.set_title('Feature Importance for This Prediction', fontsize=14, fontweight='bold', pad=20)
-                ax.axvline(x=0, color='black', linestyle='-', linewidth=0.8)
-                ax.grid(axis='x', alpha=0.3, linestyle='--')
-                ax.spines['top'].set_visible(False)
-                ax.spines['right'].set_visible(False)
-                
-                # Format x-axis without scientific notation
-                ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{x:.3f}'))
-                
-                # Add legend with simple patches
-                from matplotlib.patches import Patch
-                legend_elements = [
-                    Patch(facecolor='#ff6b6b', alpha=0.8, label='Pushes toward FAKE'),
-                    Patch(facecolor='#4ecdc4', alpha=0.8, label='Pushes toward REAL')
-                ]
-                ax.legend(handles=legend_elements, loc='lower right', fontsize=10, frameon=True)
-                
+                plt.title("Feature Importance for This Prediction", fontsize=16, fontweight='bold', pad=20)
+                plt.xlabel("SHAP Value (impact on prediction)", fontsize=12)
                 plt.tight_layout()
                 
-                # Display in Streamlit
-                st.pyplot(fig, use_container_width=True)
-                plt.close(fig)
+                st.pyplot(fig)
+                plt.close()
                 
                 st.markdown("""
                 **How to read this chart:**
                 - Each bar represents a word/feature from your text
-                - **Red bars** (→ right) push the prediction toward "Fake"
-                - **Blue bars** (← left) push the prediction toward "Real"
+                - **Red bars** (→) push the prediction toward "Fake"
+                - **Blue bars** (←) push the prediction toward "Real"
                 - Longer bars = stronger influence on the prediction
-                - The chart shows the top 15 most influential features
                 """)
                 
             except Exception as e:
                 st.error(f"Could not generate SHAP explanation: {str(e)}")
                 st.info("The prediction is still valid, but the detailed explanation is temporarily unavailable.")
-                
-                # Debug info (remove after fixing)
-                import traceback
-                st.code(traceback.format_exc())
 
 # Footer
 st.markdown("---")
@@ -433,6 +371,6 @@ st.markdown("""
     <p><strong>Disclaimer:</strong> This tool provides predictions based on machine learning analysis. 
     Always verify job postings independently and use multiple sources before making decisions.</p>
     <p>🔒 Your data is not stored or shared. All analysis happens locally.</p>
-    <p style="margin-top: 1rem;">Built with ❤️ using Streamlit, XGBoost, and SHAP</p>
+    <p style="margin-top: 1rem;">Built By Sonu Kumar with ❤️ using Streamlit, XGBoost, and SHAP</p>
 </div>
 """, unsafe_allow_html=True)

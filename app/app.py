@@ -361,41 +361,53 @@ if analyze_button:
                 abs_vals = np.abs(shap_vals)
                 top_indices = np.argsort(abs_vals)[-15:][::-1]
                 
-                # Create manual bar plot instead of waterfall (more stable)
+                # Create data for visualization
                 top_features = [feature_names[i] for i in top_indices]
-                top_values = [shap_vals[i] for i in top_indices]
-                colors = ['#ff6b6b' if v > 0 else '#4ecdc4' for v in top_values]
+                top_values = [float(shap_vals[i]) for i in top_indices]
                 
-                # Generate plot
-                fig, ax = plt.subplots(figsize=(12, 8))
-                y_pos = np.arange(len(top_features))
-                ax.barh(y_pos, top_values, color=colors, alpha=0.8)
-                ax.set_yticks(y_pos)
-                ax.set_yticklabels(top_features, fontsize=10)
-                ax.set_xlabel('SHAP Value (Impact on Prediction)', fontsize=12, fontweight='bold')
-                ax.set_title('Feature Importance for This Prediction', fontsize=14, fontweight='bold', pad=20)
-                ax.axvline(x=0, color='black', linestyle='-', linewidth=0.8)
-                ax.grid(axis='x', alpha=0.3)
+                # Use Streamlit native bar chart instead of matplotlib
+                import pandas as pd
+                chart_data = pd.DataFrame({
+                    'Feature': top_features,
+                    'SHAP Value': top_values
+                }).sort_values('SHAP Value', ascending=True)
                 
-                # Add legend
-                from matplotlib.patches import Patch
-                legend_elements = [
-                    Patch(facecolor='#ff6b6b', alpha=0.8, label='Pushes toward FAKE'),
-                    Patch(facecolor='#4ecdc4', alpha=0.8, label='Pushes toward REAL')
-                ]
-                ax.legend(handles=legend_elements, loc='lower right', fontsize=10)
+                # Display as a simple table with visual bars
+                st.markdown("#### Top Features Influencing the Prediction")
                 
-                plt.tight_layout()
-                st.pyplot(fig)
-                plt.close()
+                for idx, row in chart_data.iterrows():
+                    feature = row['Feature']
+                    value = row['SHAP Value']
+                    
+                    # Determine color and direction
+                    if value > 0:
+                        color = "#ff6b6b"
+                        direction = "FAKE"
+                        bar_width = int(abs(value) * 100)
+                    else:
+                        color = "#4ecdc4"
+                        direction = "REAL"
+                        bar_width = int(abs(value) * 100)
+                    
+                    # Create visual bar using markdown
+                    col1, col2, col3 = st.columns([3, 5, 2])
+                    with col1:
+                        st.markdown(f"**{feature}**")
+                    with col2:
+                        st.markdown(
+                            f'<div style="background-color: {color}; width: {bar_width}%; '
+                            f'height: 20px; border-radius: 3px;"></div>',
+                            unsafe_allow_html=True
+                        )
+                    with col3:
+                        st.markdown(f"→ {direction}")
                 
+                st.markdown("---")
                 st.markdown("""
-                **How to read this chart:**
-                - Each bar represents a word/feature from your text
-                - **Red bars** (→ right) push the prediction toward "Fake"
-                - **Blue bars** (← left) push the prediction toward "Real"
-                - Longer bars = stronger influence on the prediction
-                - The chart shows the top 15 most influential features
+                **How to read this:**
+                - 🔴 **Red bars** push the prediction toward "Fake"
+                - 🔵 **Blue bars** push the prediction toward "Real"
+                - Longer bars = stronger influence
                 """)
                 
             except Exception as e:
